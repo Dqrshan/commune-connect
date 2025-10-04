@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
-import { analyzeMessage, generateAutoResponse } from '@/lib/gemini'
+import { analyzeMessage, generateEmergencyResponse } from '@/lib/gemini'
 
 export async function GET(
     request: NextRequest,
@@ -154,42 +154,49 @@ export async function POST(
                         }
                     })
 
-                    // Generate automatic AI response for urgent messages
-                    const aiResponse = await generateAutoResponse(
+                    // Generate emergency AI response for urgent/emergency messages
+                    const aiResponse = await generateEmergencyResponse(
                         content,
                         analysis,
                         community.name,
-                        fullCommunity?.description,
-                        fullCommunity ? { latitude: fullCommunity.latitude, longitude: fullCommunity.longitude } : undefined,
-                        recentMessages
+                        fullCommunity ? { latitude: fullCommunity.latitude, longitude: fullCommunity.longitude } : undefined
                     )
 
-                    // Post AI response if needed
+                    // Post AI response if needed (especially for emergencies)
                     if (aiResponse.shouldRespond && aiResponse.confidence > 0.5) {
-                        // Find or create AI user
+                        // Find or create Emergency AI Assistant user
                         let aiUser = await prisma.user.findFirst({
-                            where: { email: 'ai-assistant@communeconnect.ai' }
+                            where: { email: 'emergency-ai@communeconnect.ai' }
                         })
 
                         if (!aiUser) {
                             aiUser = await prisma.user.create({
                                 data: {
-                                    email: 'ai-assistant@communeconnect.ai',
-                                    name: 'AI Assistant',
+                                    email: 'emergency-ai@communeconnect.ai',
+                                    name: aiResponse.isEmergency ? '🚨 Emergency AI' : 'AI Assistant',
                                     role: 'USER'
                                 }
                             })
                         }
 
-                        // Create AI response message
+                        // Create AI response message with emergency formatting
+                        const responseContent = aiResponse.isEmergency
+                            ? `🚨 **EMERGENCY RESPONSE** 🚨\n\n${aiResponse.response}\n\n**Emergency Instructions:**\n${aiResponse.emergencyInstructions?.map((instruction, i) => `${i + 1}. ${instruction}`).join('\n') || ''}`
+                            : `🤖 ${aiResponse.response}`
+
                         await prisma.message.create({
                             data: {
-                                content: `🤖 ${aiResponse.response}`,
+                                content: responseContent,
                                 userId: aiUser.id,
                                 communityId,
                                 aiProcessed: true,
-                                aiTags: JSON.stringify(['ai-response', 'automated', 'help']),
-                                aiSummary: 'AI assistant response to urgent message'
+                                aiTags: JSON.stringify(aiResponse.isEmergency
+                                    ? ['emergency-response', 'ai-assistant', 'urgent', 'safety']
+                                    : ['ai-response', 'automated', 'help']
+                                ),
+                                aiSummary: aiResponse.isEmergency
+                                    ? 'Emergency AI response with safety instructions'
+                                    : 'AI assistant response to message'
                             }
                         })
                     }

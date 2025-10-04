@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
-import { suggestResponse } from '@/lib/gemini'
+import { suggestResponse, analyzeMessage, generateEmergencyResponse } from '@/lib/gemini'
 
 export async function POST(
     request: NextRequest,
@@ -63,21 +63,53 @@ export async function POST(
             take: 10
         })
 
-        // Build context
-        const context = `
+        // First analyze the message for emergency detection
+        const analysis = await analyzeMessage(
+            messageContent,
+            community.name,
+            community.description,
+            { latitude: community.latitude, longitude: community.longitude },
+            recentMessages
+        )
+
+        // Generate appropriate response based on analysis
+        let aiResponse
+        if (analysis.category === 'EMERGENCY' || analysis.priority === 'URGENT' || analysis.actionRequired) {
+            // Use emergency response system
+            aiResponse = await generateEmergencyResponse(
+                messageContent,
+                analysis,
+                community.name,
+                { latitude: community.latitude, longitude: community.longitude }
+            )
+
+            return NextResponse.json({
+                response: aiResponse.response,
+                isEmergency: aiResponse.isEmergency,
+                emergencyInstructions: aiResponse.emergencyInstructions,
+                priority: analysis.priority,
+                category: analysis.category,
+                success: true
+            })
+        } else {
+            // Use regular response suggestion
+            const context = `
 Community: ${community.name}
 Description: ${community.description}
 Location: ${community.latitude}, ${community.longitude}
 Recent messages: ${recentMessages.map(m => `${m.user.name}: ${m.content}`).join('\n')}
 `
 
-        // Get AI response
-        const aiResponse = await suggestResponse(messageContent, context)
+            const response = await suggestResponse(messageContent, context)
 
-        return NextResponse.json({
-            response: aiResponse,
-            success: true
-        })
+            return NextResponse.json({
+                response,
+                isEmergency: false,
+                priority: analysis.priority,
+                category: analysis.category,
+                success: true
+            })
+        }
     } catch (error) {
         console.error('Error generating AI response:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
