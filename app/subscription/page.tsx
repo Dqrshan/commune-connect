@@ -22,7 +22,9 @@ import {
     AlertCircle,
     ExternalLink,
     Download,
-    RefreshCw
+    RefreshCw,
+    ArrowLeft,
+    Settings
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -216,22 +218,39 @@ export default function Subscription() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
             <Navigation />
 
-            <div className="container mx-auto px-4 py-8">
-                <div className="max-w-6xl mx-auto space-y-8">
+            <div className="w-full px-4 py-6">
+                <div className="max-w-7xl mx-auto space-y-6">
                     {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold mb-2">Subscription Management</h1>
-                            <p className="text-muted-foreground">Manage your plan and billing preferences</p>
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="flex items-center space-x-4">
+                            <Button variant="ghost" size="sm" asChild>
+                                <Link href="/">
+                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                                    Back to Dashboard
+                                </Link>
+                            </Button>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900">Subscription Management</h1>
+                                <p className="text-gray-600">Manage your plan and billing preferences</p>
+                            </div>
                         </div>
-                        <Button
-                            variant="outline"
-                            onClick={handleRefresh}
-                            disabled={refreshing}
-                        >
-                            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                            Refresh
-                        </Button>
+                        <div className="flex items-center space-x-3">
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href="/profile">
+                                    <Settings className="w-4 h-4 mr-2" />
+                                    Profile Settings
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleRefresh}
+                                disabled={refreshing}
+                            >
+                                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                                Refresh
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Message */}

@@ -20,11 +20,12 @@ import {
     BarChart3
 } from 'lucide-react'
 import Link from 'next/link'
+import { Header } from './Header'
 
 export function LandingPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-            <Navigation />
+            <Header />
 
             {/* Hero Section */}
             <section className="relative overflow-hidden">
@@ -197,7 +198,7 @@ export function LandingPage() {
                         </Card>
 
                         {/* Personal Plan */}
-                        <Card className="border-0 shadow-xl border-2 border-blue-500 relative">
+                        <Card className="shadow-xl border-2 border-blue-500 relative">
                             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                                 <Badge className="bg-blue-500 text-white px-4 py-1">
                                     <Star className="w-3 h-3 mr-1" />
