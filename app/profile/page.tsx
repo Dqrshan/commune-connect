@@ -164,7 +164,7 @@ export default function ProfilePage() {
                 <div className="max-w-6xl mx-auto space-y-6">
                     {/* Header */}
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-col justify-start items-start space-x-4">
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href="/">
                                     <ArrowLeft className="w-4 h-4 mr-2" />

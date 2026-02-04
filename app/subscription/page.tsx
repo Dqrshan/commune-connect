@@ -222,7 +222,7 @@ export default function Subscription() {
                 <div className="max-w-7xl mx-auto space-y-6">
                     {/* Header */}
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex items-center space-x-4">
+                        <div className="flex flex-col items-start justify-start space-x-4">
                             <Button variant="ghost" size="sm" asChild>
                                 <Link href="/">
                                     <ArrowLeft className="w-4 h-4 mr-2" />
